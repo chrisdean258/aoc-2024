@@ -9,38 +9,26 @@
 readInt :: String -> Int
 readInt = read
 
-doDrops1 :: Int -> [a] -> [a]
-doDrops1 i [] = []
-doDrops1 i (v:vs) | i == 0 = vs
-                  | otherwise = v:doDrops1 (i-1) vs
-
-
-doDropsInt :: Int -> [a] -> [[a]]
-doDropsInt i vs | i == length vs = []
-                | otherwise = doDrops1 i vs:doDropsInt (i+1) vs
-
-doDrops :: [a] -> [[a]]
-doDrops = doDropsInt 0
-
+delIndex :: Int -> [a] -> [a]
+delIndex idx xs = lft ++ rgt
+    where (lft, _:rgt) = splitAt idx xs
+ 
+allPairs :: (a -> a -> Bool) -> [a] -> Bool
+allPairs pred xs = and $ zipWith pred xs $ tail xs
 
 isSafe :: [Int] -> Bool
 isSafe vals = smallChange && (up || down)
     where
-        smallChange = all (\n -> n > 0 && n < 4) $ zipWith (\a b -> abs (a - b)) vals $ tail vals
-        up = and $ zipWith (<) vals $ tail vals
-        down = and $ zipWith (>) vals $ tail vals
+        smallChange = allPairs (\a b -> a /= b && abs (a - b) < 4) vals
+        up = allPairs (<) vals
+        down = allPairs (>) vals
 
-isSafeString :: String -> Bool
-isSafeString s = safety
-    where
-        vals = map readInt $ words s
-        dropouts = doDrops vals
-        safety = any isSafe dropouts
-
+isDampenedSafe :: [Int] -> Bool
+isDampenedSafe vals = any (isSafe . uncurry delIndex . (,vals)) [0..(length vals - 1)]
 
 main :: IO ()
 main = do contents <- getContents
-          let ls = lines contents
-          let safe = map isSafeString ls
+          let ls = map words $ lines contents
+          let safe = map (isDampenedSafe . map readInt) ls
           print $ length $ filter id safe
 
