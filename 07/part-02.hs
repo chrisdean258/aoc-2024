@@ -15,7 +15,10 @@ parseLine s = (head all, tail all)
     where all = s & map (\c -> if c == ':' then ' ' else c) & words & map readInt
 
 concatInt :: Int -> Int -> Int
-concatInt i j = show i ++ show j & read
+concatInt i j | j < 10 = 10 * i + j
+              | j < 100 = 100 * i + j
+              | j < 1000 = 1000 * i + j
+              | otherwise = error "Out of range"
 
 solve :: Int -> [Int] -> Bool
 solve target [val] = target == val
