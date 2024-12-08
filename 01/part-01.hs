@@ -6,12 +6,9 @@ import Data.List
 -- import Data.String
 -- import qualified Data.Text as T
 
-readInt :: String -> Int
-readInt = read
-
 main :: IO ()
 main = do contents <- getContents
-          let ls = sum . map (\x -> abs (head x - last x)) . transpose . map sort . transpose . map (map readInt . words) . lines $ contents
+          let ls :: Int = sum . map (\(a:b:_) -> abs (a - b)) . transpose . map sort . transpose . map (map read . words) . lines $ contents
           print ls
 
 

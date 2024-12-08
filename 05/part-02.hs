@@ -24,7 +24,7 @@ followsAllOrders orders line = all (`followsOrder` line) orders
 sortFunc :: [(Int, Int)] -> Int -> Int -> Ordering
 sortFunc rs a b | isJust $ elemIndex (a, b) rs = compare 0 1
                 | isJust $ elemIndex (b, a) rs = compare 1 0
-                | otherwise = compare 0 0
+                | otherwise = error "Nope"
 
 main :: IO ()
 main = do contents <- getContents
