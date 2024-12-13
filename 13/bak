@@ -1,0 +1,59 @@
+import Data.Function
+import Data.Char
+import Data.List
+-- import Data.Maybe
+-- import Data.Ord
+-- import Data.Bits
+-- import Data.String
+-- import qualified Data.Text as T
+import qualified Data.Map as M
+import qualified Data.Set as S
+import Debug.Trace
+
+type Point = (Int, Int)
+type Vec = (Int, Int)
+
+readInt :: String -> Int
+readInt = read
+
+take4 :: [a] -> [[a]]
+take4 (a:b:c:_:rest) = [a,b,c]:take4 rest
+take4 other = [other]
+
+readInts :: String -> [Int]
+readInts s = s & filter (\c -> isDigit c || c == ' ') & words & map readInt
+
+
+
+search :: M.Map Int [Point] -> S.Set Point -> Vec -> Vec -> Point -> Int
+search q all_seen (dax, day) (dbx, dby) target
+  | null q = -1
+  | point == target = cost
+  | S.member point all_seen = continue
+  | px > tx || py > ty = continue
+  | otherwise = search q'' all_seen' (dax, day) (dbx, dby) target
+    where
+        ((cost, point:rest), q') = M.deleteFindMin q
+        all_seen' = S.insert point all_seen
+        (px, py) = point
+        (tx, ty) = target
+        with_rest = if null rest then q' else M.insert cost rest q'
+        q'' = M.insertWith (++) (cost + 1) [(px + dbx, py + dby)] $ M.insertWith (++) (cost + 3) [(px + dax, py + day)] with_rest
+        continue = search  q' all_seen' (dax, day) (dbx, dby) target
+
+
+solve :: [[Int]] -> Int
+solve ([x1, y1]:[x2, y2]:[tx, ty]:_) = search q S.empty (x1, y1) (x2, y2) (tx, ty)
+    where
+        q = M.singleton 0 [(0, 0)]
+solve a = error $ show a
+
+
+main :: IO ()
+main = do contents <- getContents
+          let ls = lines contents
+          let ints = map readInts ls
+          let probs = take4 ints
+          let costs = map solve probs
+          print costs
+
