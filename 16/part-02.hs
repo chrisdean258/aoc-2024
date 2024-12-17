@@ -1,12 +1,6 @@
-import Debug.Trace
 import Data.Function
 import Data.List
 import Data.Maybe
-import Data.Char
-import Data.Ord
-import Data.Bits
-import Data.String
-import qualified Data.Text as T
 import qualified Data.Map as M
 import qualified Data.Set as S
 
@@ -25,14 +19,8 @@ rotateDir (ud, lr) = (-lr, ud)
 rotateDir' :: Direction -> Direction
 rotateDir' (ud, lr) = (lr, -ud)
 
-
-
 (+++) :: Point -> Direction -> Point
 (+++) (px, py) (dx, dy) = (px + dx, py + dy)
-
-
-readInt :: String -> Int
-readInt = read
 
 index2 :: [[a]] -> [((Int, Int), a)]
 index2 a = concatMap (\(i, v) -> zipWith ((,).(i,)) [0..] v) (zip [0..] a)
@@ -49,8 +37,6 @@ update h all_points q (c, unique) seen_pts parent
         enqueue = M.insert (c, unique) h q
         add_parent = M.insert h (cost, parent:parents) seen_pts
         insert_first = M.insert h (c, [parent]) seen_pts
-
-
 
 solve :: Set -> Point -> Queue -> Int -> M.Map Heading (Int, [Heading]) -> M.Map Heading (Int, [Heading])
 solve points target q c seen
@@ -69,8 +55,6 @@ collect (h:hs) m acc = collect (additional ++ hs) m acc'
         acc' = S.insert h acc
         additional = M.lookup h m & fromJust & snd
 
-
-
 main :: IO ()
 main = do contents <- getContents
           let map_ = index2 $ lines contents
@@ -82,4 +66,3 @@ main = do contents <- getContents
           let true_starts = map (fst.snd) $ head $ groupBy (\a b -> fst a == fst b) ( sort $ zip (map (fst . snd) starts) starts) 
           let all_headings = group $ sort $ map fst $ S.toList $ collect true_starts soln S.empty
           print $ length all_headings
-
