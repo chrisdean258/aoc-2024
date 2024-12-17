@@ -12,6 +12,8 @@ import qualified Data.Set as S
 
 type Point = (Int, Int)
 type Direction = (Int, Int)
+type Map = M.Map (Int, Int) (Point, Direction)
+type Set = S.Set (Point, Direction)
 
 directions :: [Direction]
 directions = [(0,1), (1, 0), (0,-1), (-1,0)]
@@ -22,27 +24,16 @@ rotateDir (ud, lr) = (-lr, ud)
 rotateDir' :: Direction -> Direction
 rotateDir' (ud, lr) = (lr, -ud)
 
-
-type Map = M.Map (Int, Int) (Point, Direction)
-type Set = S.Set (Point, Direction)
-
 (+++) :: Point -> Direction -> Point
 (+++) (px, py) (dx, dy) = (px + dx, py + dy)
-
-
-readInt :: String -> Int
-readInt = read
 
 index2 :: [[a]] -> [((Int, Int), a)]
 index2 a = concatMap (\(i, v) -> zipWith ((,).(i,)) [0..] v) (zip [0..] a)
 
 update :: Point -> Direction -> Set -> Map -> (Int, Int) -> Map
 update p d s m v
- | seen = m
- | otherwise = m'
-    where
-        seen = S.notMember (p, d) s
-        m' = M.insert v (p, d) m
+ | S.notMember (p, d) s = m
+ | otherwise = M.insert v (p, d) m 
 
 solve :: Set -> Point -> Map -> Int -> Int
 solve points target m c
@@ -56,11 +47,10 @@ solve points target m c
         r_m = update p (rotateDir d) points' s_m (v + 1000, c + 2)
         m'' = update p (rotateDir' d) points' r_m (v + 1000, c + 3)
         
-
 main :: IO ()
 main = do contents <- getContents
           let map_ = index2 $ lines contents
-          let map_points :: Set = map_ & filter (\c -> snd c == '.' || snd c == 'S' || snd c == 'E') & concatMap (\v -> map (fst v,) directions) & S.fromList
+          let map_points = map_ & filter (\c -> snd c /= '#') & concatMap (\v -> map (fst v,) directions) & S.fromList
           let (start, _) = map_ & filter (\c -> snd c == 'S') & head
           let (target, _) = map_ & filter (\c -> snd c == 'E') & head
           let soln = solve map_points target (M.singleton (0,0) (start, (0, 1))) 0
