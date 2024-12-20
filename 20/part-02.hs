@@ -36,12 +36,13 @@ bfs pts seen q unique
         q'' = foldl (\qq (p, u) -> M.insert (c + 1, unique + u) p qq) q' $ zip downstream [1..] 
     
 
-
-shortestPaths :: S.Set Point -> M.Map (Point, Point) Int
-shortestPaths pts = dists
+shortestPaths :: S.Set Point -> Point -> Point -> M.Map (Point, Point) Int
+shortestPaths pts start end = M.fromList one_way
     where
         as_list = S.toList pts
-        dists = M.fromList $ concatMap (\p -> map (\(to, c) -> ((p, to), c)) $ M.toList $ bfs pts M.empty (M.singleton (0,0) p) 1) as_list
+        expandpt p (to, c) = [((p, to), c), ((to, p), c)]
+        expandbfs p = concatMap (expandpt p) $ M.toList $ bfs pts M.empty (M.singleton (0,0) p) 1
+        one_way = concatMap expandbfs [start, end]
 
 mLookup :: Ord a => a -> M.Map a b -> b
 mLookup a = fromJust . M.lookup a
@@ -59,7 +60,7 @@ main = do contents <- getContents
           let start = head $ map fst $ filter ((=='S').snd) boardl
           let end = head $ map fst $ filter ((=='E').snd) boardl
           let board = S.fromList $ map fst boardl
-          let fw = shortestPaths board 
+          let fw = shortestPaths board start end
           let cheats = concatMap (surround20 board) $ S.toList board
           let saved :: [Int] = map (savedD fw start end) cheats
           let cond = length $ filter (>=100) saved
